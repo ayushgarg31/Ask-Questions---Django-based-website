@@ -1,0 +1,164 @@
+{% load staticfiles %}
+<!--DOCTYPE html-->
+<html>
+<head>
+<title>Ask Questions</title>
+<link rel='stylesheet' href='{% static "css/index.css" %}'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="icon" href="{% static 'image/logo1.ico' %}">
+</head>
+
+<body>
+	<div class="navbar">
+		<div class="logo">
+			<img src='{% static "image/Logo.jpg" %}' style="width: 230px; margin-top: 10px;" />
+		</div>
+		<div class="search">
+			<div style="margin-top: 22px; margin-left: 22.5%;">
+			<form method='GET' action=''>
+			<input type='text' name='q' placeholder='Search questions' value='{{request.GET.q }}' id="search1"/>
+
+			<button type='submit' id="search2"><i class="fa fa-search" aria-hidden="true"></i></button>
+			</form>
+			</div>
+		</div>
+		<div class="navlinks">
+			<h6><a href="{% url "home" %}">Home</a></h6> <h6 style="width: 30%;"><a href="{% url "create" %}">Ask a Question</a></h6> <h6><a href="{% url "profile" id=profile.id %}">Profile</a></h6> <h6><a href="{% url "user" %}">Users</a></h6> <h6><a>Contact</a></h6>
+		</div>
+		<div class="login" style="font-size: 15px;">
+			{% if request.user.is_authenticated %}
+			<p><a href="{% url "logout" %}"><i class="fa fa-sign-out" aria-hidden="true"></i> Log out</a></p>
+			{% else %}
+			<p><a href="{% url "login" %}"><i class="fa fa-sign-in" aria-hidden="true"></i> Log in / Register</a></p>
+			{%endif %}
+		</div>
+	</div>
+
+	<div class="main">
+		<div class="links">
+			<div id="ask-cont">
+			<a href="{% url "create" %}" style="text-decoration: none;"><p class="ask"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp Ask a Question</p></a>
+			</div>
+			{% if request.user.is_authenticated %}
+			<p style="color: #3498db;text-align: center;">Hey, {{ request.user }} !!</p>
+			{% if profile.image %}
+			<img src='{{ profile.image.url }}' id="image1"/>
+			{% else %}
+			<img src='{% static "image/default_user.png" %}' id="image1"/>
+			{% endif %}
+			<div class="rank">
+			<p style="background-color: #3498db; border:none;color: white">Amateur</p>
+			<p {% if profile.points >= 100 %}
+			style="background-color: #1abc9c; border:none;color:white;" 
+			{% endif %}>Trainee</p>
+			<p {% if profile.points >= 1000 %}
+			style="background-color: gold; border:none;" 
+			{% endif %}>Professor</p>
+			<p {% if profile.points >= 2000 %}
+			style="background-color: red; border:none;color:white;" 
+			{% endif %}>Legend</p>
+			<div id="myProgress">
+				<h6 style="float: left;margin-left: 35%;margin-top: 2px;">{{ val }}</h6>
+			  <div id="myBar" style="width: {{ percent }}%"></div>
+			</div>
+			</div>
+			
+			{% endif %}
+			
+
+		</div>
+		<div class="content">
+			<table style="width: 100%;border-spacing: 0px;min-height: 100%;">
+				<tr>
+			<td style="width:100%; float: left;">
+				<div class="heading">
+					<div class="tab">
+						<p>All Questions</p>	
+					</div>
+				</div>
+
+			<div class="welcome">
+				<div class="tab">
+					<a href="{% url "home" %}" style="color: #8c97b4;"><p class="{{ home }}"" style="display:inline-block;">Latest</p></a>
+					<a href="{% url "home_views" %}" style="color: #8c97b4;"><p class="{{ home_views }}"" style="display: inline-block;">Views</p></a>
+				</div>
+			</div>
+
+
+			{% if messages %}
+			<div class="messages">
+			    {% for message in messages %}
+			    <p{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{message}}</p>
+			    {% endfor %}
+			</div>
+			{% endif %}
+
+
+			{% for obj in object_list %}
+			<div class="question">
+				<div class="left">
+					<h6 style="font-size: 16px;" class="ques"><strong><a href='{% url "detail" id=obj.id %}' style="text-decoration: none;color:#444c63;">{{ obj.question | linebreaks | truncatechars:50 }}</a></strong></h6>
+					<h6 style="font-size: 15px; font-weight: normal; color: #6f7d95;" class="des">{{ obj.description | truncatechars:50 }}</h6>
+					{% if obj.user.image %}
+					<img src='{{ obj.user.image.url }}' id="image"/>
+					{% else %}
+					<img src='{% static "image/default_user.png" %}' id="image"/>
+					{% endif %}
+					<h6 style="font-size: 14px; font-weight: normal; color: #6f7d95;" class="des1"><a href="{% url "profile" id=obj.user.id %}" style="text-decoration: none;color: #6f7d95;">{{ obj.user }}</a> &nbsp &nbsp {{ obj.timestamp }}</h6>
+				</div>
+				<div class="right">
+					<div class="circle" style="display: inline-block;"><h6>{{ obj.views }}</h6><p>Views</p></div>
+					{% if obj.answered == 0 %}
+					<div class="circle" style="display: inline-block;"><h6>{{ obj.answers }}</h6><p>Answers</p></div>
+					{% else %}
+					<div class="circle" style="display: inline-block;"><h6 style="background-color: #1abc9c;color: white; border:none;">{{ obj.answers }}</h6><p>Answers</p></div>
+					{% endif %}
+				</div>
+
+			</div>
+			{% endfor %}
+			<br/><br/>
+			<div class="page" style="width: 79%;">
+				{% if object_list.has_previous %}
+	            <a href="?page={{ object_list.previous_page_number }} & q={{ request.GET.q }}"><i class="fa fa-chevron-left" aria-hidden="true" style="background-color: #1abc9c;color: white; border:none;"></i></a>
+	            {% else %}
+	            <a><i class="fa fa-chevron-left" aria-hidden="true"></i></a>
+	        	{% endif %}
+	        	<span class="current">
+	            &nbsp Page {{ object_list.number }} of {{ object_list.paginator.num_pages }}. &nbsp
+	        	</span>
+	        	{% if object_list.has_next %}
+	            <a href="?page={{ object_list.next_page_number }} & q={{ request.GET.q }}" ><i class="fa fa-chevron-right " aria-hidden="true" style="background-color: #1abc9c;color: white; border:none;"></i></a>
+	            {% else %}
+	            <a><i class="fa fa-chevron-right " aria-hidden="true"></i></a>
+	        	{% endif %}
+	        </div>
+
+
+			</td>
+			<td class="stats" style="padding-top: 30px;vertical-align: top;">
+				<div class="bor" style="border-left-color: #3498db">
+					<p class="stat_q">Questions</p>
+					<p class="stat_a">{{ q }}</p>
+				</div>
+				<div class="bor" style="border-left-color: #f39c12;">
+					<p class="stat_q">Answers</p>
+					<p class="stat_a">{{ a }}</p>
+				</div>
+				<div class="bor" style="border-left-color: red;">
+					<p class="stat_q">Users</p>
+					<p class="stat_a">{{ u }}</p>
+				</div>
+				<div class="bor" style="border:none; padding-top: 40px;">
+					<p>Top users</p>
+					{% for obj in top %}
+					<p class="stat_q"><a  href="{% url "profile" id=obj.id %}" style="color: #6f7daf;text-decoration: none;">{{ obj.user }} ({{obj.points}})</a></p>
+					{% endfor %}
+				</div>
+			</td>
+		</tr>
+		</table>
+		</div>
+	</div>
+</body>
+</html>

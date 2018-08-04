@@ -1,0 +1,97 @@
+{% load staticfiles %}
+<!--DOCTYPE html-->
+<html>
+<head>
+<title>Ask Questions</title>
+<link rel='stylesheet' href='{% static "css/create.css" %}'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="icon" href="{% static 'image/logo1.ico' %}">
+</head>
+
+<body>
+	<div class="navbar">
+		<div class="logo">
+			<img src='{% static "image/Logo.jpg" %}' style="width: 230px; margin-top: 10px;" />
+		</div>
+		<div class="search">
+		</div>
+		<div class="navlinks">
+			<h6><a href="{% url "home" %}">Home</a></h6> <h6 style="width: 30%;"><a href="{% url "create" %}">Ask a Question</a></h6> <h6><a href="{% url "profile" id=profile.id %}">Profile</a></h6> <h6><a href="{% url "user" %}">Users</a></h6> <h6><a>Contact</a></h6>
+		</div>
+		<div class="login" style="font-size: 15px;">
+			{% if request.user.is_authenticated %}
+			<p><a href="{% url "logout" %}"><i class="fa fa-sign-out" aria-hidden="true"></i> Log out</a></p>
+			{% else %}
+			<p><a href="{% url "login" %}"><i class="fa fa-sign-in" aria-hidden="true"></i> Log in / Register</a></p>
+			{%endif %}
+		</div>
+	</div>
+
+	<div class="main">
+		<div class="links">
+			<div id="ask-cont">
+			<a href="{% url "create" %}" style="text-decoration: none;"><p class="ask"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp Ask a Question</p></a>
+			</div>
+		</div>
+		<div class="content">
+			<table style="width: 100%;border-spacing: 0px;min-height: 100%;">
+				<tr>
+			<td style="width:100%; float: left;">
+				<div class="heading">
+					<div class="tab">
+						<p>Ask a Question</p>	
+					</div>
+				</div>
+
+			<div class="welcome">
+				<div class="tab">
+					<p>&nbsp</p>
+				</div>
+			</div>
+
+
+			{% if messages %}
+			<div class="messages">
+			    {% for message in messages %}
+			    <p{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{message}}</p>
+			    {% endfor %}
+			</div>
+			{% endif %}
+
+			<div id="tab1" class="tabcontent">
+				<form method="POST" action="" enctype='multipart/form-data'>
+				{% csrf_token %}
+				{{ form.as_p }}
+				<input type="submit" value='Update' class="btn btn-success btn-lg"/>
+				</form>
+			</div>
+
+
+		</td>
+			<td class="stats" style="padding-top: 30px;vertical-align: top;">
+				<div class="bor" style="border-left-color: #3498db">
+					<p class="stat_q">Questions</p>
+					<p class="stat_a">{{ q }}</p>
+				</div>
+				<div class="bor" style="border-left-color: #f39c12;">
+					<p class="stat_q">Answers</p>
+					<p class="stat_a">{{ a }}</p>
+				</div>
+				<div class="bor" style="border-left-color: red;">
+					<p class="stat_q">Users</p>
+					<p class="stat_a">{{ u }}</p>
+				</div>
+				<div class="bor" style="border:none; padding-top: 40px;">
+					<p>Top users</p>
+					{% for obj in top %}
+					<p class="stat_q"><a  href="{% url "profile" id=obj.id %}" style="color: #6f7daf;text-decoration: none;">{{ obj.user }} ({{obj.points}})</a></p>
+					{% endfor %}
+				</div>
+			</td>
+		</tr>
+	</table>
+		</div>
+	</div>
+
+</body>
+</html>

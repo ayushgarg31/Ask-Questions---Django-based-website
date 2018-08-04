@@ -1,0 +1,211 @@
+{% load staticfiles %}
+<!--DOCTYPE html-->
+<html>
+<head>
+<title>Ask Questions</title>
+<link rel='stylesheet' href='{% static "css/question.css" %}'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="icon" href="{% static 'image/logo1.ico' %}">
+</head>
+
+<body>
+	<div class="navbar">
+		<div class="logo">
+			<img src='{% static "image/Logo.jpg" %}' style="width: 230px; margin-top: 10px;" />
+		</div>
+		<div class="search">
+			<div style="margin-top: 22px; margin-left: 22.5%;">
+			<form method='GET' action=''>
+			<input type='text' name='q' placeholder='Search answers' value='{{request.GET.q }}' id="search1"/>
+
+			<button type='submit' id="search2"><i class="fa fa-search" aria-hidden="true"></i></button>
+			</form>
+			</div>
+		</div>
+		<div class="navlinks">
+			<h6><a href="{% url "home" %}">Home</a></h6> <h6 style="width: 30%;"><a href="{% url "create" %}">Ask a Question</a></h6> <h6><a href="{% url "profile" id=profile.id %}">Profile</a></h6> <h6><a href="{% url "user" %}">Users</a></h6> <h6><a>Contact</a></h6>
+		</div>
+		<div class="login" style="font-size: 15px;">
+			{% if request.user.is_authenticated %}
+			<p><a href="{% url "logout" %}"><i class="fa fa-sign-out" aria-hidden="true"></i> Log out</a></p>
+			{% else %}
+			<p><a href="{% url "login" %}"><i class="fa fa-sign-in" aria-hidden="true"></i> Log in / Register</a></p>
+			{%endif %}
+		</div>
+	</div>
+
+	<div class="main">
+		<div class="links">
+			<div id="ask-cont">
+			<a href="{% url "create" %}" style="text-decoration: none;"><p class="ask"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp Ask a Question</p></a>
+			</div>
+			{% if request.user.is_authenticated %}
+			<p style="color: #3498db;text-align: center;">Hey, {{ request.user }} !!</p>
+			{% if profile.image %}
+			<img src='{{ profile.image.url }}' id="image1"/>
+			{% else %}
+			<img src='{% static "image/default_user.png" %}' id="image1"/>
+			{% endif %}
+			<div class="rank">
+			<p style="background-color: #3498db; border:none;color: white">Amateur</p>
+			<p {% if profile.points >= 100 %}
+			style="background-color: #1abc9c; border:none;color:white;" 
+			{% endif %}>Trainee</p>
+			<p {% if profile.points >= 1000 %}
+			style="background-color: gold; border:none;" 
+			{% endif %}>Professor</p>
+			<p {% if profile.points >= 2000 %}
+			style="background-color: red; border:none;color:white;" 
+			{% endif %}>Legend</p>
+			<div id="myProgress">
+				<h6 style="float: left;margin-left: 35%;margin-top: 2px;">{{ val }}</h6>
+			  <div id="myBar" style="width: {{ percent }}%"></div>
+			</div>
+			</div>
+			{% endif %}
+		</div>
+		<div class="content">
+			<table style="width: 100%;min-height: 100%;border-spacing: 0px;margin-right: 0px;">
+				<tr>
+			<td style="width:100%; float: left;">
+				<div class="heading">
+					<div class="tab">
+						<p style="color: #3498db; padding-right: 5%;">{{ question.question }}</p>	
+					</div>
+				</div>
+
+
+			{% if messages %}
+			<div class="messages">
+			    {% for message in messages %}
+			    <p{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{message}}</p>
+			    {% endfor %}
+			</div>
+			{% endif %}
+
+			<div class="tabcontent">
+				<h6 style="display: inline-block;">{{ question.description | linebreaks }}</h6>
+				<div class="right">
+				<div class="circle" style="display: inline-block;"><h6>{{ question.views }}</h6><p>Views</p></div>
+					{% if question.answered == 0 %}
+					<div class="circle" style="display: inline-block;"><h6>{{ question.answers }}</h6><p>Answers</p></div>
+					{% else %}
+					<div class="circle" style="display: inline-block;"><h6 style="background-color: #1abc9c;color: white; border:none;">{{ question.answers }}</h6><p>Answers</p></div>
+					{% endif %}
+				</div>
+				{% if request.user == question.user.user %}
+				<p style="background-color: #3498db;" class="button"><a href="{% url "update" id=question.id %}"><i class="fa fa-pencil" aria-hidden="true"></i> Update</a></p>
+				<p style="background-color: red;" class="button"><a href="{% url "delete" id=question.id %}"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete</a></p>
+				{% endif %}
+			</div>
+			<div style="margin-top: 0px;margin-left: 5%;">
+				{% if question.user.image %}
+				<img src='{{ question.user.image.url }}' id="image"/>
+				{% else %}
+				<img src='{% static "image/default_user.png" %}' id="image"/>
+				{% endif %}
+				<h6 style="font-size: 14px; font-weight: normal; color: #6f7d95;" class="des1"><a href="{% url "profile" id=question.user.id %}" style="text-decoration: none;color: #6f7d95;">{{ question.user }}</a> &nbsp &nbsp &nbsp Asked on {{ question.timestamp }}</h6>
+			</div>
+			<br/>
+			<div class="answers">
+
+				<div class="col-xs-4 login_form">
+				        <form id="create_form" method="post" action="{% url "detail" id=question.id %}">
+				        {% csrf_token %}
+				                Answer: <br/>
+				                <textarea name="answer" id="username" style="height:100px;"></textarea>
+				                <br /><br/>
+				        <input type="submit" name="submit" value="Submit Answer" id="create"/>
+				        </form>
+				    </div>
+				</div>
+
+				<p class="question" style="height: 30px;margin-top: 20px;">All answer for the answer.</p>
+				{% for obj in object_list %}
+				{% if obj.accepted == 1 %}
+				<div style="background-color: #fbfcff;">
+				{% endif %}
+				<div class="question">
+					<div class="left">
+						<h6 style="font-size: 16px;font-weight: normal;margin-top: 30px;" class="ques"><a style="text-decoration: none;color:#444c63;">{{ obj.answer | linebreaks }}</a></h6>
+						{% if obj.user.image %}
+						<img src='{{ obj.user.image.url }}' id="image"/>
+						{% else %}
+						<img src='{% static "image/default_user.png" %}' id="image"/>
+						{% endif %}
+						<h6 style="font-size: 14px; font-weight: normal; color: #6f7d95;" class="des1"><a href="{% url "profile" id=obj.user.id %}" style="text-decoration: none;color: #6f7d95;">{{ obj.user }}</a> &nbsp &nbsp {{ obj.timestamp }}</h6>
+					</div>
+					<div class="right" style="width: 14%;">
+						
+							{% if obj.accepted == 1 %}
+							<div class="circle" style="display: inline-block;"><p><a href="{% url "up" id=obj.id %}" style="color: #1abc9c"><i class="fa fa-chevron-up fa-2x" aria-hidden="true"></i></a></p><h6 style="background-color: #1abc9c;color: white; border:none;margin-top: 0px;">{{ obj.votes }}</h6><p><a href="{% url "down" id=obj.id %}" style="color: #1abc9c"><i class="fa fa-chevron-down fa-2x" aria-hidden="true"></i></a></p><p>Votes</p>
+							<p style="margin-left: 30%;color: white;" class="accepted"><i class="fa fa-check" aria-hidden="true">Accepted</i></p>
+							{% else %}
+							<div class="circle" style="display: inline-block;"><p><a href="{% url "up" id=obj.id %}" style="color: #8c97b2"><i class="fa fa-chevron-up fa-2x" aria-hidden="true"></i></a></p><h6 style="margin-top: 0px;">{{ obj.votes }}</h6><p><a href="{% url "down" id=obj.id %}" style="color: #8c97b2"><i class="fa fa-chevron-down fa-2x" aria-hidden="true"></i></a></p><p>Votes</p>
+							{% endif %}
+						</div>
+						
+					</div>
+					{% if request.user == obj.user.user %}
+					<p style="background-color: #3498db;" class="button"><a href="{% url "ans_update" id=obj.id %}"><i class="fa fa-pencil" aria-hidden="true"></i> Update</a></p>
+					<p style="background-color: red;" class="button"><a href="{% url "ans_delete" id=obj.id %}"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete</a></p>
+					{% endif %}
+					{% if request.user == obj.question.user.user %}
+					{% if obj.accepted == 0 %}
+					<p style="background-color: #1abc9c;" class="button"><a href="{% url "accept" id=obj.id %}"><i class="fa fa-check" aria-hidden="true"></i> Accept</a></p>
+					{% else %}
+					<p style="background-color: #1abc9c;" class="button"><a href="{% url "unaccept" id=obj.id %}"><i class="fa fa-times" aria-hidden="true"></i> Unaccept</a></p>
+					{% endif %}
+					{% endif %}
+					
+				</div>
+				{% if obj.accepted == 1 %}
+				</div>
+				{% endif %}
+				{% endfor %}
+				<br/>
+				<br/>
+				<div class="page" style="width: 79%;">
+				{% if object_list.has_previous %}
+	            <a href="?page={{ object_list.previous_page_number }} & q={{ request.GET.q }}"><i class="fa fa-chevron-left" aria-hidden="true" style="background-color: #1abc9c;color: white; border:none;"></i></a>
+	            {% else %}
+	            <a><i class="fa fa-chevron-left" aria-hidden="true"></i></a>
+	        	{% endif %}
+	        	<span class="current">
+	            &nbsp Page {{ object_list.number }} of {{ object_list.paginator.num_pages }}. &nbsp
+	        	</span>
+	        	{% if object_list.has_next %}
+	            <a href="?page={{ object_list.next_page_number }} & q={{ request.GET.q }}" ><i class="fa fa-chevron-right " aria-hidden="true" style="background-color: #1abc9c;color: white; border:none;"></i></a>
+	            {% else %}
+	            <a><i class="fa fa-chevron-right " aria-hidden="true"></i></a>
+	        	{% endif %}
+	        </div>
+
+			</td>
+			<td class="stats" style="padding-top: 30px;vertical-align: top;">
+				<div class="bor" style="border-left-color: #3498db">
+					<p class="stat_q">Questions</p>
+					<p class="stat_a">{{ q }}</p>
+				</div>
+				<div class="bor" style="border-left-color: #f39c12;">
+					<p class="stat_q">Answers</p>
+					<p class="stat_a">{{ a }}</p>
+				</div>
+				<div class="bor" style="border-left-color: red;">
+					<p class="stat_q">Users</p>
+					<p class="stat_a">{{ u }}</p>
+				</div>
+				<div class="bor" style="border:none; padding-top: 40px;">
+					<p>Top users</p>
+					{% for obj in top %}
+					<p class="stat_q"><a  href="{% url "profile" id=obj.id %}" style="color: #6f7daf;text-decoration: none;">{{ obj.user }} ({{obj.points}})</a></p>
+					{% endfor %}
+				</div>
+			</td>
+		</tr>
+		</table>
+		</div>
+	</div>
+
+</body>
+</html>
